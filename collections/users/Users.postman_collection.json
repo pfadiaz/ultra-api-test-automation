@@ -1,0 +1,617 @@
+{
+	"info": {
+		"_postman_id": "0766657e-bc1e-4869-9bbe-85dd41fc7b12",
+		"name": "Users",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Positive Scenarios",
+			"item": [
+				{
+					"name": "UL-001: Create a new user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// get current timestamp",
+									"let uniqueIdentifier = Date.now();",
+									"// generate random data to create a new user and avoid manual interaction everytime",
+									"let createUserRequestBody = {",
+									"    \"name\": `API Test - ${uniqueIdentifier}`,",
+									"    \"gender\": \"male\",",
+									"    \"email\": `ultra.api-test${uniqueIdentifier}@ultra.com`,",
+									"    \"status\": \"active\"",
+									"}",
+									"",
+									"// Set the value to the env variable",
+									"pm.environment.set('create_user_request_body', JSON.stringify(createUserRequestBody)); ",
+									"   pm.environment.set(\"req\", pm.request)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Wrap the response after creating the user on this variable",
+									"const jsonResponse = pm.response.json()",
+									"console.log(\"jsonResponse \",jsonResponse)",
+									"",
+									"/**",
+									" * BEGIN TESTS",
+									" */",
+									"",
+									"pm.test('Validate status code is 201 - CREATED',() => {",
+									"    pm.response.to.have.status(201);",
+									"})",
+									"",
+									"pm.test('Validate the user id was created and not null || undefined',() => {",
+									"    pm.expect(jsonResponse).to.have.property('id');",
+									"    pm.expect(jsonResponse.id).to.be.a('number');",
+									"    pm.environment.set(\"user_id\",jsonResponse.id);",
+									"    console.log(jsonResponse.id);",
+									"})",
+									"",
+									"pm.test('Validate the user created matches the body sent',() => {",
+									"    // Retrieve the original json posted, parse it as it is string",
+									"    const expectedUserData = JSON.parse(pm.variables.get('create_user_request_body'));",
+									" ",
+									"    pm.expect(jsonResponse.name).to.be.equal(expectedUserData.name);",
+									"    pm.expect(jsonResponse.email).to.be.equal(expectedUserData.email);",
+									"    pm.expect(jsonResponse.gender).to.be.equal(expectedUserData.gender);",
+									"    pm.expect(jsonResponse.status).to.be.equal(expectedUserData.status);",
+									"})",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{create_user_request_body}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{users}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{users}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UL-002: Get a user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Wrap the response after creating the user on this variable",
+									"const jsonResponse = pm.response.json()",
+									"",
+									"/**",
+									" * BEGIN TESTS",
+									" */",
+									"",
+									"pm.test('Validate status code is 200 - SUCCESS',() => {",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"",
+									"",
+									"pm.test('Validate the user data matches the original values',() => {",
+									"    // Retrieve the original json posted, parse it as it is string",
+									"    const expectedUserData = JSON.parse(pm.variables.get('create_user_request_body'));",
+									"    const expectedUserId = JSON.parse(pm.variables.get('user_id'));",
+									"    ",
+									"    pm.expect(jsonResponse.id).to.be.equal(expectedUserId);",
+									"    pm.expect(jsonResponse.name).to.be.equal(expectedUserData.name);",
+									"    pm.expect(jsonResponse.email).to.be.equal(expectedUserData.email);",
+									"    pm.expect(jsonResponse.gender).to.be.equal(expectedUserData.gender);",
+									"    pm.expect(jsonResponse.status).to.be.equal(expectedUserData.status);",
+									"})",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/{{users}}/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{users}}",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UL-003: Update a user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// get current timestamp",
+									"let uniqueIdentifier = Date.now();",
+									"",
+									"// generate new data to update a user and avoid manual interaction everytime",
+									"let updatedUserRequestBody = {",
+									"    \"name\": `Edited Test_V2 - ${uniqueIdentifier}`,",
+									"    \"gender\": \"female\",",
+									"    \"email\": `ultra.api-test-edited-user${uniqueIdentifier}@ultra.com`,",
+									"    \"status\": \"active\"",
+									"}",
+									"",
+									"// Set the value to the env variable",
+									"pm.environment.set('updated_user_request_body', JSON.stringify(updatedUserRequestBody)); "
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"const jsonResponse = pm.response.json()",
+									"console.log(\"jsonResponse \",jsonResponse)",
+									"",
+									"/**",
+									" * BEGIN TESTS",
+									" */",
+									"",
+									"pm.test('Validate status code is 200 - UPDATED',() => {",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"",
+									"pm.test('Validate the updated user matches the body sent',() => {",
+									"    // Retrieve the original json posted, parse it as it is string",
+									"    const expectedUserUpdatedData = JSON.parse(pm.variables.get('updated_user_request_body'));",
+									" ",
+									"    pm.expect(jsonResponse.name).to.be.equal(expectedUserUpdatedData.name);",
+									"    pm.expect(jsonResponse.email).to.be.equal(expectedUserUpdatedData.email);",
+									"    pm.expect(jsonResponse.gender).to.be.equal(expectedUserUpdatedData.gender);",
+									"    pm.expect(jsonResponse.status).to.be.equal(expectedUserUpdatedData.status);",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{updated_user_request_body}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{users}}/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{users}}",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UL-004: Delete an user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Wrap the response after creating the user on this variable",
+									"//const jsonResponse = pm.response.json()",
+									"",
+									"/**",
+									" * BEGIN TESTS",
+									" */",
+									"",
+									"pm.test('Validate status code is 204 - No Content',() => {",
+									"    pm.response.to.have.status(204);",
+									"})",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"delete_request\", pm.request)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/{{users}}/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{users}}",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Negative Scenarios",
+			"item": [
+				{
+					"name": "UL-005: Re-create an existing user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Wrap the response after creating the user on this variable",
+									"const jsonResponse = pm.response.json()",
+									"",
+									"/**",
+									" * BEGIN TESTS",
+									" */",
+									"",
+									"pm.test('Validate status code is 422 - Data validation failed',() => {",
+									"    pm.response.to.have.status(422);",
+									"})",
+									"",
+									"pm.test('Validate the error message when an account already exists',() => { ",
+									"    pm.expect(jsonResponse[0].field).to.be.equal('email');",
+									"    pm.expect(jsonResponse[0].message).to.be.equal('has already been taken');",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{existing_user_request_body}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{users}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{users}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UL-006: Get a deleted user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Wrap the response after creating the user on this variable",
+									"const jsonResponse = pm.response.json()",
+									"",
+									"/**",
+									" * BEGIN TESTS",
+									" */",
+									"",
+									"pm.test('Validate status code is 404 - Not Found',() => {",
+									"    pm.response.to.have.status(404);",
+									"})",
+									"",
+									"pm.test('Validate the error message when trying to GET an account does not exist',() => { ",
+									"    pm.expect(jsonResponse.message).to.be.equal('Resource not found');",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/{{users}}/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{users}}",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UL-007: Update a deleted user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// get current timestamp",
+									"let uniqueIdentifier = Date.now();",
+									"",
+									"// generate new data to update a user and avoid manual interaction everytime",
+									"let updatedUserRequestBody = {",
+									"    \"name\": `Edited Test_V2 - ${uniqueIdentifier}`,",
+									"    \"gender\": \"female\",",
+									"    \"email\": `ultra.api-test-edited-user${uniqueIdentifier}@ultra.com`,",
+									"    \"status\": \"active\"",
+									"}",
+									"",
+									"// Set the value to the env variable",
+									"pm.environment.set('updated_user_request_body', JSON.stringify(updatedUserRequestBody)); "
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Wrap the response after creating the user on this variable",
+									"const jsonResponse = pm.response.json()",
+									"",
+									"/**",
+									" * BEGIN TESTS",
+									" */",
+									"",
+									"pm.test('Validate status code is 404 - Not Found',() => {",
+									"    pm.response.to.have.status(404);",
+									"})",
+									"",
+									"pm.test('Validate the error message when trying to UPDATE an account does not exist',() => { ",
+									"    pm.expect(jsonResponse.message).to.be.equal('Resource not found');",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{updated_user_request_body}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{users}}/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{users}}",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UL-008: Delete an un-existing record",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Wrap the response after creating the user on this variable",
+									"const jsonResponse = pm.response.json()",
+									"",
+									"/**",
+									" * BEGIN TESTS",
+									" */",
+									"",
+									"pm.test('Validate status code is 404 - Not Found',() => {",
+									"    pm.response.to.have.status(404);",
+									"})",
+									"",
+									"pm.test('Validate the error message when trying to DELETE an account does not exist',() => { ",
+									"    pm.expect(jsonResponse.message).to.be.equal('Resource not found');",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/{{users}}/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{users}}",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "user_id",
+			"value": ""
+		}
+	]
+}
